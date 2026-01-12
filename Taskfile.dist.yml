@@ -1,0 +1,75 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: "3"
+
+includes:
+  fusain:
+    taskfile: packages/fusain/Taskfile.dist.yml
+    dir: packages/fusain
+
+tasks:
+  install-git-hooks:
+    desc: Install pre-commit hook that runs CI checks
+    preconditions:
+      - sh: test -d .git
+        msg: "Error: Not in a git repository. Initialize with 'git init' first."
+      - sh: test -f git-hooks/pre-commit
+        msg: "Error: git-hooks/pre-commit not found."
+    cmds:
+      - mkdir -p .git/hooks
+      - cp git-hooks/pre-commit .git/hooks/pre-commit
+      - chmod +x .git/hooks/pre-commit
+      - |
+        echo "Pre-commit hook installed at .git/hooks/pre-commit"
+        echo ""
+        echo "The hook will run on every commit and check:"
+        echo "  - Code formatting (Prettier)"
+        echo "  - Tests with 100% coverage (Vitest)"
+        echo ""
+        echo "To skip the hook for a commit, use: git commit --no-verify"
+        echo "To uninstall: rm .git/hooks/pre-commit"
+
+  install:
+    desc: Install all dependencies
+    cmd: pnpm install
+
+  build:
+    desc: Build all packages
+    deps: [install]
+    cmd: pnpm -r build
+
+  clean:
+    desc: Clean all build artifacts
+    cmd: pnpm -r clean
+
+  test:
+    desc: Run all tests
+    deps: [install]
+    cmd: pnpm -r test
+
+  test:coverage:
+    desc: Run tests with coverage
+    deps: [install]
+    cmd: pnpm -r test:coverage
+
+  lint:
+    desc: Run linting
+    deps: [install]
+    cmd: pnpm -r lint
+
+  format:
+    desc: Format all source files
+    deps: [install]
+    cmd: pnpm -r format
+
+  format:check:
+    desc: Check formatting
+    deps: [install]
+    cmd: pnpm -r format:check
+
+  ci:
+    desc: Run CI checks (format, test with coverage)
+    deps: [install]
+    cmds:
+      - echo "Running Roastee CI checks..."
+      - task: fusain:ci

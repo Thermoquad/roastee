@@ -1,0 +1,24 @@
+#!/bin/bash
+# Roastee pre-commit hook - runs CI checks
+# Copyright (c) 2025 Kaz Walker, Thermoquad
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# This hook is installed by running: task install-git-hooks
+
+set -e
+
+echo "Running pre-commit checks..."
+echo ""
+
+# Run CI checks (format + tests with coverage)
+if ! task ci; then
+  echo ""
+  echo "Pre-commit failed - CI checks failed"
+  echo "Fix the issues, then try committing again."
+  exit 1
+fi
+
+echo ""
+echo "All pre-commit checks passed!"
+
+exit 0

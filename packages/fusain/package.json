@@ -1,0 +1,64 @@
+{
+  "name": "fusain",
+  "version": "0.0.1",
+  "description": "TypeScript implementation of the Fusain protocol for Thermoquad",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist coverage *.tsbuildinfo",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write 'src/**/*.ts'",
+    "format:check": "prettier --check 'src/**/*.ts'",
+    "prepublishOnly": "pnpm run build"
+  },
+  "keywords": [
+    "fusain",
+    "thermoquad",
+    "protocol",
+    "serial",
+    "cbor",
+    "embedded"
+  ],
+  "author": "Kaz Walker",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Thermoquad/roastee.git",
+    "directory": "packages/fusain"
+  },
+  "homepage": "https://github.com/Thermoquad/roastee/tree/master/packages/fusain#readme",
+  "bugs": {
+    "url": "https://github.com/Thermoquad/roastee/issues"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "eslint": "^9.0.0",
+    "prettier": "^3.5.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "cbor-x": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

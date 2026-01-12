@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: Apache-2.0
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: "3"
+
+tasks:
+  build:
+    desc: Build the package
+    cmd: pnpm build
+
+  clean:
+    desc: Clean build artifacts
+    cmd: rm -rf dist coverage *.tsbuildinfo
+
+  test:
+    desc: Run tests
+    cmd: pnpm test
+
+  test:coverage:
+    desc: Run tests with coverage
+    cmd: pnpm test:coverage
+
+  test:watch:
+    desc: Run tests in watch mode
+    cmd: pnpm test:watch
+
+  format:
+    desc: Format source files
+    cmd: pnpm format
+
+  format:check:
+    desc: Check formatting
+    cmd: pnpm format:check
+
+  lint:
+    desc: Run linter
+    cmd: pnpm lint
+
+  ci:
+    desc: Run CI checks (format, test with coverage)
+    cmds:
+      - echo "Running TS Fusain CI checks..."
+      - task: format:check
+      - task: test:coverage
+      - echo "TS Fusain CI checks passed!"

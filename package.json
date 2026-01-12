@@ -1,0 +1,27 @@
+{
+  "name": "@thermoquad/roastee-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Roastee - Thermoquad PWA and TypeScript packages",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "test:coverage": "pnpm -r test:coverage",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
+    "format:check": "pnpm -r format:check",
+    "clean": "pnpm -r clean"
+  },
+  "keywords": [
+    "thermoquad",
+    "fusain",
+    "protocol"
+  ],
+  "author": "Kaz Walker",
+  "license": "GPL-2.0-or-later",
+  "packageManager": "pnpm@10.12.1",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
+  }
+}

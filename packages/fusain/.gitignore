@@ -1,0 +1,9 @@
+# Task runner (local overrides)
+Taskfile.yml
+
+# Build outputs
+dist/
+*.tsbuildinfo
+
+# Coverage
+coverage/
