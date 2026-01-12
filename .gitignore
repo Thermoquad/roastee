@@ -1,6 +1,9 @@
 # Task runner (local overrides)
 Taskfile.yml
 
+# Build artifacts
+dist/
+
 # Dependencies
 node_modules/
 

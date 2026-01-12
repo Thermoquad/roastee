@@ -1,4 +1,5 @@
 import { createSignal, createEffect, onMount } from 'solid-js';
+import { fusainReady, protocolVersion } from './fusain';
 
 export default function App() {
   const [online, setOnline] = createSignal(navigator.onLine);
@@ -67,6 +68,10 @@ export default function App() {
           The app should continue working with cached assets.
         </p>
       </section>
+
+      {fusainReady && (
+        <footer class="text-center text-xs text-gray-400 py-2">{protocolVersion}</footer>
+      )}
     </main>
   );
 }

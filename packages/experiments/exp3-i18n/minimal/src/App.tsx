@@ -1,5 +1,6 @@
 import { createSignal, createEffect, For, createMemo } from 'solid-js';
 import { t, locales, type Locale, type TranslationKey } from './i18n';
+import { fusainReady, protocolVersion } from './fusain';
 
 export default function App() {
   const [locale, setLocale] = createSignal<Locale>('en');
@@ -149,6 +150,10 @@ export default function App() {
           </button>
         </div>
       </section>
+
+      {fusainReady && (
+        <footer class="text-center text-xs text-gray-400 py-2">{protocolVersion}</footer>
+      )}
     </main>
   );
 }

@@ -14,7 +14,7 @@ import {
 import { calculateCRC } from "./crc.js";
 import { Packet } from "./packet.js";
 import { DecodeError } from "./types.js";
-import type { DecodeResult } from "./types.js";
+import type { DecodeResult, IPacket } from "./types.js";
 
 /**
  * Fusain protocol packet decoder state machine
@@ -223,8 +223,8 @@ export class Decoder {
    * @returns Array of completed packets
    * @throws DecodeError if decoding fails
    */
-  decodeBytes(bytes: Uint8Array): Packet[] {
-    const packets: Packet[] = [];
+  decodeBytes(bytes: Uint8Array): IPacket[] {
+    const packets: IPacket[] = [];
     for (const byte of bytes) {
       const packet = this.decodeByte(byte);
       if (packet) {

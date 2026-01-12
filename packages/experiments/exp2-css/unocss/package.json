@@ -8,6 +8,7 @@
     "build": "vite build"
   },
   "dependencies": {
+    "fusain": "workspace:*",
     "solid-js": "^1.9.6"
   },
   "devDependencies": {

@@ -1,6 +1,7 @@
 <script lang="ts">
   import * as stores from './stores/index.svelte';
   import { t, type TranslationKey } from './i18n/index';
+  import { fusainReady, protocolVersion } from './fusain';
   import Dashboard from './pages/Dashboard.svelte';
   import Settings from './pages/Settings.svelte';
 
@@ -32,6 +33,9 @@
       <Dashboard />
     {:else if stores.route === 'settings'}
       <Settings />
+    {/if}
+    {#if fusainReady}
+      <footer class="text-center text-xs text-gray-400 py-2">{protocolVersion}</footer>
     {/if}
   </main>
 

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { fusainReady, protocolVersion } from './fusain';
+
   // Svelte 5 runes for reactive state
   let connected = $state(true);
   let heaterOn = $state(false);
@@ -75,6 +77,10 @@
       Heater: {heaterText}
     </button>
   </section>
+
+  {#if fusainReady}
+    <footer class="protocol">{protocolVersion}</footer>
+  {/if}
 </main>
 
 <style>

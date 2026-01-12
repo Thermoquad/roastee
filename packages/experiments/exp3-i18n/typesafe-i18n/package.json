@@ -9,6 +9,7 @@
     "typesafe-i18n": "typesafe-i18n"
   },
   "dependencies": {
+    "fusain": "workspace:*",
     "solid-js": "^1.9.6",
     "typesafe-i18n": "^5.26.2"
   },

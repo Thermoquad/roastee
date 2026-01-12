@@ -1,5 +1,6 @@
 import { createSignal, createEffect, onCleanup } from 'solid-js';
 import './App.css';
+import { fusainReady, protocolVersion } from './fusain';
 
 export default function App() {
   const [connected, setConnected] = createSignal(true);
@@ -72,6 +73,10 @@ export default function App() {
           Heater: {heaterText()}
         </button>
       </section>
+
+      <footer class="protocol">
+        {fusainReady && <span>{protocolVersion}</span>}
+      </footer>
     </main>
   );
 }

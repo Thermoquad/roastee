@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'preact/hooks';
 import './App.css';
+import { fusainReady, protocolVersion } from './fusain';
 
 export function App() {
   const [connected, setConnected] = useState(true);
@@ -72,6 +73,8 @@ export function App() {
           Heater: {heaterText}
         </button>
       </section>
+
+      {fusainReady && <footer class="protocol">{protocolVersion}</footer>}
     </main>
   );
 }

@@ -8,6 +8,7 @@
     "build": "vite build"
   },
   "dependencies": {
+    "fusain": "workspace:*",
     "svelte": "^5.46.1"
   },
   "devDependencies": {

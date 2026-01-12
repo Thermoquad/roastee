@@ -9,6 +9,10 @@ importers:
   .: {}
 
   packages/experiments/exp1-framework/preact:
+    dependencies:
+      fusain:
+        specifier: workspace:*
+        version: link:../../../fusain
     devDependencies:
       '@preact/preset-vite':
         specifier: ^2.9.0
@@ -21,6 +25,10 @@ importers:
         version: 6.4.1(@types/node@22.19.5)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)
 
   packages/experiments/exp1-framework/solid:
+    dependencies:
+      fusain:
+        specifier: workspace:*
+        version: link:../../../fusain
     devDependencies:
       solid-js:
         specifier: ^1.9.0
@@ -33,6 +41,10 @@ importers:
         version: 2.11.10(solid-js@1.9.10)(vite@6.4.1(@types/node@22.19.5)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1))
 
   packages/experiments/exp1-framework/svelte:
+    dependencies:
+      fusain:
+        specifier: workspace:*
+        version: link:../../../fusain
     devDependencies:
       '@sveltejs/vite-plugin-svelte':
         specifier: ^5.0.0
@@ -46,6 +58,9 @@ importers:
 
   packages/experiments/exp2-css/tailwind:
     dependencies:
+      fusain:
+        specifier: workspace:*
+        version: link:../../../fusain
       solid-js:
         specifier: ^1.9.6
         version: 1.9.10
@@ -68,6 +83,9 @@ importers:
 
   packages/experiments/exp2-css/unocss:
     dependencies:
+      fusain:
+        specifier: workspace:*
+        version: link:../../../fusain
       solid-js:
         specifier: ^1.9.6
         version: 1.9.10
@@ -90,6 +108,9 @@ importers:
 
   packages/experiments/exp2-css/vanilla:
     dependencies:
+      fusain:
+        specifier: workspace:*
+        version: link:../../../fusain
       solid-js:
         specifier: ^1.9.6
         version: 1.9.10
@@ -106,6 +127,9 @@ importers:
 
   packages/experiments/exp3-i18n/minimal:
     dependencies:
+      fusain:
+        specifier: workspace:*
+        version: link:../../../fusain
       solid-js:
         specifier: ^1.9.6
         version: 1.9.10
@@ -128,6 +152,9 @@ importers:
 
   packages/experiments/exp3-i18n/typesafe-i18n:
     dependencies:
+      fusain:
+        specifier: workspace:*
+        version: link:../../../fusain
       solid-js:
         specifier: ^1.9.6
         version: 1.9.10
@@ -153,6 +180,9 @@ importers:
 
   packages/experiments/exp4-pwa/manual:
     dependencies:
+      fusain:
+        specifier: workspace:*
+        version: link:../../../fusain
       solid-js:
         specifier: ^1.9.6
         version: 1.9.10
@@ -175,6 +205,9 @@ importers:
 
   packages/experiments/exp4-pwa/workbox:
     dependencies:
+      fusain:
+        specifier: workspace:*
+        version: link:../../../fusain
       solid-js:
         specifier: ^1.9.6
         version: 1.9.10
@@ -234,6 +267,9 @@ importers:
 
   packages/experiments/exp6-alt-stack/svelte-tailwind:
     dependencies:
+      fusain:
+        specifier: workspace:*
+        version: link:../../../fusain
       svelte:
         specifier: ^5.46.1
         version: 5.46.1

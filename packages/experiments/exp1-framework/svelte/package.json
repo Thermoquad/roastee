@@ -9,6 +9,9 @@
     "preview": "vite preview",
     "size": "vite build && gzip -c dist/assets/*.js | wc -c && gzip -c dist/assets/*.css 2>/dev/null | wc -c || echo 0"
   },
+  "dependencies": {
+    "fusain": "workspace:*"
+  },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
     "svelte": "^5.0.0",

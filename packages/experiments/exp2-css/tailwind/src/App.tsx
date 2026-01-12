@@ -1,4 +1,5 @@
 import { createSignal, createEffect, For } from 'solid-js';
+import { fusainReady, protocolVersion } from './fusain';
 
 interface TelemetryValue {
   label: string;
@@ -111,6 +112,10 @@ export default function App() {
           </button>
         </div>
       </section>
+
+      {fusainReady && (
+        <footer class="text-center text-xs text-gray-400 py-2">{protocolVersion}</footer>
+      )}
     </main>
   );
 }

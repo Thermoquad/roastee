@@ -3,6 +3,7 @@ import { useStore } from '@nanostores/solid';
 import { $route, $locale } from './stores';
 import { navigate } from './router';
 import { t, type TranslationKey } from './i18n';
+import { fusainReady, protocolVersion } from './fusain';
 import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
 
@@ -21,6 +22,9 @@ export default function App() {
         <Show when={route() === 'settings'}>
           <Settings />
         </Show>
+        {fusainReady && (
+          <footer class="text-center text-xs text-gray-400 py-2">{protocolVersion}</footer>
+        )}
       </main>
 
       <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
