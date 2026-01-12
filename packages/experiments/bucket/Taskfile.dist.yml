@@ -1,0 +1,237 @@
+# SPDX-License-Identifier: Apache-2.0
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: "3"
+
+env:
+  FIRMWARE_IMG: build/zephyr/zephyr.hex
+  # Pico 2W board with WiFi
+  BOARD: rpi_pico2/rp2350a/m33/w
+  # Relative paths to Thermoquad tools
+  OPENOCD: ../../../../../bin/openocd
+  OCD_SCRIPTS: ../../../../../tools/installs/openocd/share/openocd/scripts
+  RP_CFG: ../../../../../tools/installs/openocd/share/openocd/scripts/target/rp2350.cfg
+  PROBE_USB_ID: 2e8a:000c
+  OCD_CFG: cmsis-dap.cfg
+
+tasks:
+  build-firmware:
+    desc: Build the Bucket HTTP server firmware
+    cmds:
+      - west build -b $BOARD
+
+  rebuild-firmware:
+    desc: Clean and rebuild the Bucket firmware
+    cmds:
+      - west build -b $BOARD -p always
+
+  flash-firmware:
+    desc: Flash the Bucket firmware to a Pico 2W
+    deps:
+      - task: build-firmware
+      - task: setup-flash-config
+    preconditions:
+      - test -f $FIRMWARE_IMG
+    cmds:
+      - $OPENOCD -f $OCD_CFG -f $RP_CFG -c "program $FIRMWARE_IMG verify reset exit"
+
+  setup-flash-config:
+    desc: Create OpenOCD config for Pico debug probe
+    interactive: true
+    env:
+      PROBE_COUNT:
+        sh: lsusb -d $PROBE_USB_ID -v 2>/dev/null | grep iSerial | awk '{print $3}' | wc -l || echo "0"
+      PROBE_SERIALS:
+        sh: lsusb -d $PROBE_USB_ID -v 2>/dev/null | grep iSerial | awk '{print $3}' || echo ""
+    status:
+      - test -f cmsis-dap.cfg
+    cmds:
+      - "{{ if int .PROBE_COUNT | gt 1 }}gum confirm 'Multiple probes detected. Select one?'{{ end }}"
+      - echo "adapter driver cmsis-dap" > $OCD_CFG
+      - echo -n "adapter serial " >> $OCD_CFG
+      - echo "$PROBE_SERIALS" | gum choose --select-if-one --header "Select debug probe:" >> $OCD_CFG
+      - echo "adapter speed 5000" >> $OCD_CFG
+
+  menuconfig:
+    desc: Open Zephyr Kconfig menu
+    cmds:
+      - west build -t menuconfig
+
+  serial-terminal:
+    desc: Connect to serial console
+    interactive: true
+    env:
+      SERIAL_PORT:
+        sh: ls -l /dev/ttyACM* 2>/dev/null | awk '{print $10}' | gum choose --header "Select serial port:" || echo "/dev/ttyACM0"
+    cmds:
+      - minicom --baudrate 115200 --device $SERIAL_PORT
+
+  deploy-exp1-solid:
+    desc: Deploy experiment 1 (SolidJS) build to bucket
+    dir: ../exp1-framework/solid
+    deps: [clean-web]
+    cmds:
+      - pnpm build
+      - mkdir -p ../../bucket/web
+      - cp dist/index.html ../../bucket/web/
+      - cp dist/app.js ../../bucket/web/
+      - cp dist/app.css ../../bucket/web/ 2>/dev/null || true
+      - cp ../../bucket/static/favicon.* ../../bucket/web/
+
+  deploy-exp1-svelte:
+    desc: Deploy experiment 1 (Svelte) build to bucket
+    dir: ../exp1-framework/svelte
+    deps: [clean-web]
+    cmds:
+      - pnpm build
+      - mkdir -p ../../bucket/web
+      - cp dist/index.html ../../bucket/web/
+      - cp dist/app.js ../../bucket/web/
+      - cp dist/app.css ../../bucket/web/ 2>/dev/null || true
+      - cp ../../bucket/static/favicon.* ../../bucket/web/
+
+  deploy-exp1-preact:
+    desc: Deploy experiment 1 (Preact) build to bucket
+    dir: ../exp1-framework/preact
+    deps: [clean-web]
+    cmds:
+      - pnpm build
+      - mkdir -p ../../bucket/web
+      - cp dist/index.html ../../bucket/web/
+      - cp dist/app.js ../../bucket/web/
+      - cp dist/app.css ../../bucket/web/ 2>/dev/null || true
+      - cp ../../bucket/static/favicon.* ../../bucket/web/
+
+  deploy-exp2-unocss:
+    desc: Deploy experiment 2 (UnoCSS) build to bucket
+    dir: ../exp2-css/unocss
+    deps: [clean-web]
+    cmds:
+      - pnpm build
+      - mkdir -p ../../bucket/web
+      - cp dist/index.html ../../bucket/web/
+      - cp dist/app.js ../../bucket/web/
+      - cp dist/app.css ../../bucket/web/ 2>/dev/null || true
+      - cp ../../bucket/static/favicon.* ../../bucket/web/
+
+  deploy-exp5-fullstack:
+    desc: Deploy experiment 5 (full stack) build to bucket
+    dir: ../exp5-full-stack
+    deps: [clean-web]
+    cmds:
+      - pnpm build
+      - mkdir -p ../bucket/web
+      - cp dist/index.html ../bucket/web/
+      - cp dist/app.js ../bucket/web/
+      - cp dist/app.css ../bucket/web/
+      - cp ../bucket/static/favicon.* ../bucket/web/
+
+  clean-web:
+    desc: Remove deployed web content
+    cmds:
+      - rm -rf web/*
+
+  firmware-stats:
+    desc: Display firmware memory usage
+    preconditions:
+      - test -f build/zephyr/zephyr.elf
+    cmds:
+      - |
+        echo "Memory usage:"
+        SIZE_OUTPUT=$(../../../../../tools/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-size build/zephyr/zephyr.elf)
+        echo "$SIZE_OUTPUT" | tail -1 | awk '{printf "  Flash: %d bytes\n  RAM: %d bytes\n", $1+$2, $2+$3}'
+
+  image:
+    desc: Build firmware image for a specific experiment
+    requires:
+      vars: [EXP]
+    cmds:
+      - task: deploy-{{.EXP}}
+      - task: save-assets
+        vars:
+          EXP: '{{.EXP}}'
+      - task: rebuild-firmware
+      - mkdir -p images
+      - cp build/zephyr/zephyr.elf images/{{.EXP}}.elf
+
+  save-assets:
+    desc: Save web assets in plain and gzip formats
+    requires:
+      vars: [EXP]
+    cmds:
+      - mkdir -p images/assets/{{.EXP}}
+      - |
+        for f in web/index.html web/app.js web/app.css; do
+          [ -f "$f" ] || continue
+          base=$(basename "$f")
+          cp "$f" "images/assets/{{.EXP}}/$base"
+          gzip -9 -c "$f" > "images/assets/{{.EXP}}/$base.gz"
+        done
+
+  images-all:
+    desc: Build firmware images for all experiments
+    vars:
+      EXPERIMENTS: [exp1-solid, exp1-svelte, exp1-preact, exp2-unocss, exp5-fullstack]
+    cmds:
+      - for: { var: EXPERIMENTS }
+        task: image
+        vars:
+          EXP: '{{.ITEM}}'
+
+  images-stats:
+    desc: Display firmware stats for all images
+    preconditions:
+      - test -d images
+    cmds:
+      - |
+        SIZE_CMD=../../../../../tools/zephyr-sdk/arm-zephyr-eabi/bin/arm-zephyr-eabi-size
+        printf "%-20s %10s %10s\n" "Image" "Flash" "RAM"
+        printf "%-20s %10s %10s\n" "--------------------" "----------" "----------"
+        for elf in images/*.elf; do
+          [ -f "$elf" ] || continue
+          name=$(basename "$elf" .elf)
+          SIZE_OUTPUT=$($SIZE_CMD "$elf")
+          echo "$SIZE_OUTPUT" | tail -1 | awk -v name="$name" '{printf "%-20s %10d %10d\n", name, $1+$2, $2+$3}'
+        done
+
+  assets-stats:
+    desc: Display asset compression stats for all experiments
+    preconditions:
+      - test -d images/assets
+    cmds:
+      - |
+        printf "%-20s %-12s %8s %8s %8s\n" "Experiment" "File" "Plain" "Gzip" "Saving%"
+        printf "%-20s %-12s %8s %8s %8s\n" "--------------------" "------------" "--------" "--------" "--------"
+
+        total_plain=0
+        total_gzip=0
+
+        for exp_dir in images/assets/*/; do
+          [ -d "$exp_dir" ] || continue
+          exp=$(basename "$exp_dir")
+
+          for f in "$exp_dir"/*.html "$exp_dir"/*.js "$exp_dir"/*.css; do
+            [ -f "$f" ] || continue
+            base=$(basename "$f")
+            gz_file="$f.gz"
+
+            [ -f "$gz_file" ] || continue
+
+            plain_size=$(wc -c < "$f")
+            gzip_size=$(wc -c < "$gz_file")
+
+            total_plain=$((total_plain + plain_size))
+            total_gzip=$((total_gzip + gzip_size))
+
+            gz_save=$(awk "BEGIN {printf \"%.1f\", 100 * ($plain_size - $gzip_size) / $plain_size}")
+
+            printf "%-20s %-12s %8d %8d %7s%%\n" "$exp" "$base" "$plain_size" "$gzip_size" "$gz_save"
+          done
+        done
+
+        echo ""
+        printf "%-20s %-12s %8s %8s %8s\n" "--------------------" "------------" "--------" "--------" "--------"
+
+        if [ $total_plain -gt 0 ]; then
+          avg_gz_save=$(awk "BEGIN {printf \"%.1f\", 100 * ($total_plain - $total_gzip) / $total_plain}")
+          printf "%-20s %-12s %8d %8d %7s%%\n" "TOTAL" "" "$total_plain" "$total_gzip" "$avg_gz_save"
+        fi

@@ -1,86 +1,73 @@
 <script lang="ts">
-  import { fusainReady, protocolVersion } from './fusain';
+  import { onMount, onDestroy } from 'svelte';
+  import { fusainClient, protocolVersion, type TelemetryState } from './fusain';
 
   // Svelte 5 runes for reactive state
-  let connected = $state(true);
-  let heaterOn = $state(false);
-
-  // Telemetry values
-  let temperature = $state(25.0);
-  let rpm = $state(0);
-  let pressure = $state(101.3);
-  let flowRate = $state(0.0);
-  let voltage = $state(12.1);
-
-  // Derived state
-  let statusText = $derived(connected ? 'Connected' : 'Disconnected');
-  let heaterText = $derived(heaterOn ? 'ON' : 'OFF');
-
-  // Simulate telemetry updates
-  $effect(() => {
-    const interval = setInterval(() => {
-      temperature = 20 + Math.random() * 30;
-      rpm = heaterOn ? 1000 + Math.random() * 500 : 0;
-      pressure = 100 + Math.random() * 5;
-      flowRate = heaterOn ? 1.5 + Math.random() * 0.5 : 0;
-      voltage = 11.8 + Math.random() * 0.6;
-    }, 100);
-
-    return () => clearInterval(interval);
+  let telemetry = $state<TelemetryState>({
+    connected: false,
+    state: 'Connecting...',
+    stateCode: 0,
+    temperature: 0,
+    motorRpm: 0,
+    motorTarget: 0,
+    pumpRate: 0,
+    glowLit: false,
+    timestamp: 0,
+    packetCount: 0,
   });
 
-  function toggleHeater() {
-    heaterOn = !heaterOn;
-  }
+  onMount(() => {
+    fusainClient.connect((state) => {
+      telemetry = state;
+    });
+  });
 
-  function toggleConnection() {
-    connected = !connected;
-  }
+  onDestroy(() => {
+    fusainClient.disconnect();
+  });
 </script>
 
 <main>
-  <h1>Device Dashboard</h1>
+  <h1>Burner Dashboard</h1>
 
   <section class="status">
-    <span class="indicator" class:connected></span>
-    <span>{statusText}</span>
-    <button onclick={toggleConnection}>
-      {connected ? 'Disconnect' : 'Connect'}
-    </button>
+    <span class="indicator" class:connected={telemetry.connected}></span>
+    <span>{telemetry.connected ? 'Connected' : 'Disconnected'}</span>
+    <span class="state-badge" data-state={telemetry.stateCode}>
+      {telemetry.state}
+    </span>
   </section>
 
   <section class="telemetry">
     <div class="value">
       <label>Temperature</label>
-      <span>{temperature.toFixed(1)} °C</span>
+      <span>{telemetry.temperature.toFixed(1)} °C</span>
     </div>
     <div class="value">
-      <label>RPM</label>
-      <span>{rpm.toFixed(0)}</span>
+      <label>Motor RPM</label>
+      <span>{telemetry.motorRpm.toFixed(0)}</span>
     </div>
     <div class="value">
-      <label>Pressure</label>
-      <span>{pressure.toFixed(1)} kPa</span>
+      <label>Target RPM</label>
+      <span>{telemetry.motorTarget.toFixed(0)}</span>
     </div>
     <div class="value">
-      <label>Flow Rate</label>
-      <span>{flowRate.toFixed(2)} L/min</span>
+      <label>Pump Rate</label>
+      <span>{telemetry.pumpRate > 0 ? `${telemetry.pumpRate} ms` : 'Off'}</span>
     </div>
     <div class="value">
-      <label>Voltage</label>
-      <span>{voltage.toFixed(2)} V</span>
+      <label>Glow Plug</label>
+      <span class={telemetry.glowLit ? 'glow-on' : 'glow-off'}>
+        {telemetry.glowLit ? 'ON' : 'OFF'}
+      </span>
+    </div>
+    <div class="value">
+      <label>Packets</label>
+      <span>{telemetry.packetCount}</span>
     </div>
   </section>
 
-  <section class="controls">
-    <button onclick={toggleHeater} class:active={heaterOn}>
-      Heater: {heaterText}
-    </button>
-  </section>
-
-  {#if fusainReady}
-    <footer class="protocol">{protocolVersion}</footer>
-  {/if}
+  <footer class="protocol">{protocolVersion}</footer>
 </main>
 
 <style>
@@ -120,6 +107,14 @@
     background: #16a34a;
   }
 
+  .state-badge {
+    margin-left: auto;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    background: #e5e7eb;
+    font-size: 0.875rem;
+  }
+
   .telemetry {
     display: grid;
     gap: 0.5rem;
@@ -134,21 +129,18 @@
     color: #666;
   }
 
-  button {
-    padding: 0.5rem 1rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background: #fff;
-    cursor: pointer;
+  .glow-on {
+    color: #f97316;
+    font-weight: bold;
   }
 
-  button:hover {
-    background: #f5f5f5;
+  .glow-off {
+    color: #6b7280;
   }
 
-  button.active {
-    background: #dc2626;
-    color: white;
-    border-color: #dc2626;
+  .protocol {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 0.75rem;
   }
 </style>
