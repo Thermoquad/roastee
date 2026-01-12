@@ -1,11 +1,14 @@
 import { render } from 'solid-js/web';
+import { HashRouter, Route } from '@solidjs/router';
 import 'virtual:uno.css';
 import '@unocss/reset/tailwind.css';
-import { initRouter } from './router';
+import { initFusain } from './fusain';
 import App from './App';
+import Dashboard from './pages/Dashboard';
+import Settings from './pages/Settings';
 
-// Initialize router
-initRouter();
+// Initialize Fusain WebSocket connection
+initFusain();
 
 // Register service worker
 if ('serviceWorker' in navigator) {
@@ -14,4 +17,12 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-render(() => <App />, document.getElementById('app')!);
+render(
+  () => (
+    <HashRouter root={App}>
+      <Route path="/" component={Dashboard} />
+      <Route path="/settings" component={Settings} />
+    </HashRouter>
+  ),
+  document.getElementById('app')!
+);

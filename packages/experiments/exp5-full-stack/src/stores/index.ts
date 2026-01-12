@@ -8,20 +8,18 @@ export const $theme = atom<'light' | 'dark'>('light');
 // Connection state
 export const $connected = atom(false);
 
-// Device state
+// Device state (from Fusain STATE_DATA)
 export const $deviceState = map({
-  heaterOn: false,
-  pumpOn: false,
+  state: 0, // fusain_state_t
+  error: 0, // fusain_error_t
 });
 
-// Telemetry data
+// Telemetry data (from Fusain telemetry messages)
 export const $telemetry = map({
   temperature: 25.0,
-  rpm: 0,
-  pressure: 101.3,
-  flowRate: 0.0,
-  voltage: 12.1,
+  motorRpm: 0,
+  motorTarget: 0,
+  pumpRate: 0,
+  glowLit: false,
+  packetCount: 0,
 });
-
-// Router state
-export const $route = atom<'dashboard' | 'settings'>('dashboard');

@@ -1,44 +1,63 @@
-import { createSignal, createEffect, For } from 'solid-js';
-import { fusainReady, protocolVersion } from './fusain';
+import { For, createMemo } from 'solid-js';
+import {
+  connected,
+  deviceState,
+  deviceError,
+  temperature,
+  motorRpm,
+  motorTarget,
+  pumpRate,
+  glowLit,
+  packetCount,
+  protocolVersion,
+  STATE_NAMES,
+} from './fusain';
 
-interface TelemetryValue {
+interface TelemetryItem {
   label: string;
-  value: () => number;
+  value: string;
   unit: string;
-  format: (n: number) => string;
+  highlight?: boolean;
 }
 
 export default function App() {
-  const [connected, setConnected] = createSignal(true);
-  const [heaterOn, setHeaterOn] = createSignal(false);
-  const [pumpOn, setPumpOn] = createSignal(false);
+  const stateName = createMemo(
+    () => STATE_NAMES[deviceState()] ?? `Unknown (${deviceState()})`
+  );
 
-  // Telemetry values
-  const [temperature, setTemperature] = createSignal(25.0);
-  const [rpm, setRpm] = createSignal(0);
-  const [pressure, setPressure] = createSignal(101.3);
-  const [flowRate, setFlowRate] = createSignal(0.0);
-  const [voltage, setVoltage] = createSignal(12.1);
-
-  const telemetry: TelemetryValue[] = [
-    { label: 'Temperature', value: temperature, unit: '°C', format: (n) => n.toFixed(1) },
-    { label: 'RPM', value: rpm, unit: '', format: (n) => n.toFixed(0) },
-    { label: 'Pressure', value: pressure, unit: 'kPa', format: (n) => n.toFixed(1) },
-    { label: 'Flow Rate', value: flowRate, unit: 'L/min', format: (n) => n.toFixed(2) },
-    { label: 'Voltage', value: voltage, unit: 'V', format: (n) => n.toFixed(2) },
-  ];
-
-  createEffect(() => {
-    const interval = setInterval(() => {
-      setTemperature(20 + Math.random() * 30);
-      setRpm(heaterOn() ? 1000 + Math.random() * 500 : 0);
-      setPressure(100 + Math.random() * 5);
-      setFlowRate(pumpOn() ? 1.5 + Math.random() * 0.5 : 0);
-      setVoltage(11.8 + Math.random() * 0.6);
-    }, 100);
-
-    return () => clearInterval(interval);
-  });
+  const telemetryItems = createMemo((): TelemetryItem[] => [
+    {
+      label: 'Temperature',
+      value: temperature().toFixed(1),
+      unit: '°C',
+    },
+    {
+      label: 'Motor RPM',
+      value: motorRpm().toFixed(0),
+      unit: '',
+    },
+    {
+      label: 'Target RPM',
+      value: motorTarget().toFixed(0),
+      unit: '',
+    },
+    {
+      label: 'Pump Rate',
+      value: pumpRate() > 0 ? `${pumpRate()}` : 'Off',
+      unit: pumpRate() > 0 ? 'ms' : '',
+    },
+    {
+      label: 'Glow Plug',
+      value: glowLit() ? 'ON' : 'OFF',
+      unit: '',
+      highlight: glowLit(),
+    },
+    {
+      label: 'Packets',
+      value: packetCount().toString(),
+      unit: '',
+    },
+  ]);
 
   return (
     <main class="max-w-120 mx-auto p-4 flex flex-col gap-4 font-sans bg-gray-100 min-h-screen text-gray-900">
@@ -56,15 +75,41 @@ export default function App() {
 
       <section class="bg-white rounded-lg p-4 shadow-sm">
         <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+          System State
+        </h2>
+        <div class="flex items-center gap-3">
+          <span
+            class={`px-3 py-1.5 rounded-full text-sm font-medium ${
+              deviceState() === 0x05
+                ? 'bg-orange-100 text-orange-800'
+                : deviceState() === 0x03 || deviceState() === 0x04
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : deviceState() === 0x07 || deviceState() === 0x08
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-gray-100 text-gray-800'
+            }`}
+          >
+            {stateName()}
+          </span>
+          {deviceError() !== 0 && (
+            <span class="text-sm text-red-600">Error: {deviceError()}</span>
+          )}
+        </div>
+      </section>
+
+      <section class="bg-white rounded-lg p-4 shadow-sm">
+        <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
           Telemetry
         </h2>
         <div class="flex flex-col gap-2">
-          <For each={telemetry}>
+          <For each={telemetryItems()}>
             {(item) => (
               <div class="flex justify-between p-2 bg-gray-50 rounded">
                 <span class="text-sm text-gray-500">{item.label}</span>
-                <span class="font-medium tabular-nums">
-                  {item.format(item.value())} {item.unit}
+                <span
+                  class={`font-medium tabular-nums ${item.highlight ? 'text-orange-600' : ''}`}
+                >
+                  {item.value} {item.unit}
                 </span>
               </div>
             )}
@@ -72,50 +117,9 @@ export default function App() {
         </div>
       </section>
 
-      <section class="bg-white rounded-lg p-4 shadow-sm">
-        <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-          Controls
-        </h2>
-        <div class="grid grid-cols-3 gap-2">
-          <button
-            class={`flex flex-col items-center gap-1 py-3 px-2 border rounded-lg cursor-pointer transition-all
-              ${heaterOn() ? 'bg-red-600 border-red-600 text-white' : 'bg-white border-gray-200 hover:bg-gray-50'}`}
-            onClick={() => setHeaterOn(!heaterOn())}
-          >
-            <span class="text-xl">🔥</span>
-            <span class="text-xs font-medium">Heater</span>
-            <span class="text-[10px] uppercase tracking-wide opacity-80">
-              {heaterOn() ? 'ON' : 'OFF'}
-            </span>
-          </button>
-          <button
-            class={`flex flex-col items-center gap-1 py-3 px-2 border rounded-lg cursor-pointer transition-all
-              ${pumpOn() ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-200 hover:bg-gray-50'}`}
-            onClick={() => setPumpOn(!pumpOn())}
-          >
-            <span class="text-xl">💧</span>
-            <span class="text-xs font-medium">Pump</span>
-            <span class="text-[10px] uppercase tracking-wide opacity-80">
-              {pumpOn() ? 'ON' : 'OFF'}
-            </span>
-          </button>
-          <button
-            class={`flex flex-col items-center gap-1 py-3 px-2 border rounded-lg cursor-pointer transition-all
-              ${!connected() ? 'opacity-50' : ''} bg-white border-gray-200 hover:bg-gray-50`}
-            onClick={() => setConnected(!connected())}
-          >
-            <span class="text-xl">🔌</span>
-            <span class="text-xs font-medium">Connection</span>
-            <span class="text-[10px] uppercase tracking-wide opacity-80">
-              {connected() ? 'Disconnect' : 'Connect'}
-            </span>
-          </button>
-        </div>
-      </section>
-
-      {fusainReady && (
-        <footer class="text-center text-xs text-gray-400 py-2">{protocolVersion}</footer>
-      )}
+      <footer class="text-center text-xs text-gray-400 py-2">
+        {protocolVersion}
+      </footer>
     </main>
   );
 }
