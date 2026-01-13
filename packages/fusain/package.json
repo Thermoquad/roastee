@@ -26,6 +26,7 @@
     "lint": "eslint src --ext .ts",
     "format": "prettier --write 'src/**/*.ts'",
     "format:check": "prettier --check 'src/**/*.ts'",
+    "benchmark": "node scripts/benchmark.mjs",
     "prepublishOnly": "pnpm run build"
   },
   "keywords": [

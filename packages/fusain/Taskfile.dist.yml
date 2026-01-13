@@ -35,6 +35,10 @@ tasks:
     desc: Run linter
     cmd: pnpm lint
 
+  benchmark:
+    desc: Run performance benchmark
+    cmd: pnpm benchmark
+
   ci:
     desc: Run CI checks (format, test with coverage)
     cmds:
