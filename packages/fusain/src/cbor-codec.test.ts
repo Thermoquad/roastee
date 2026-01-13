@@ -627,4 +627,31 @@ describe("encodeCBOR", () => {
       expect(map.get(5)).toBeCloseTo(3.14, 5);
     });
   });
+
+  describe("buffer growth", () => {
+    it("should handle payloads requiring multiple buffer doublings in one call", () => {
+      // Create a 600-byte array. Initial buffer is 256 bytes.
+      // ensureCapacity(600) triggers: 256*2=512 < 600, so while loop runs: 512*2=1024
+      // This tests the while loop branch at line 241
+      const largeBytes = new Uint8Array(600);
+      for (let i = 0; i < 600; i++) {
+        largeBytes[i] = i % 256;
+      }
+      const encoded = encodeCBOR(largeBytes);
+      const decoded = decodeCBOR(encoded);
+      expect(decoded).toEqual(largeBytes);
+    });
+
+    it("should handle incremental buffer growth", () => {
+      // After the 600-byte test, buffer is 1024. This 300-byte test
+      // verifies encoding still works with the larger buffer.
+      const largeBytes = new Uint8Array(300);
+      for (let i = 0; i < 300; i++) {
+        largeBytes[i] = i % 256;
+      }
+      const encoded = encodeCBOR(largeBytes);
+      const decoded = decodeCBOR(encoded);
+      expect(decoded).toEqual(largeBytes);
+    });
+  });
 });

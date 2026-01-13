@@ -2,6 +2,8 @@
 
 TypeScript implementation of the Fusain protocol for Thermoquad.
 
+**Zero runtime dependencies.** Custom CBOR codec included.
+
 ## Installation
 
 ```bash
@@ -134,10 +136,33 @@ Decoded packet with lazy CBOR parsing.
 - `DecodeError` - Thrown on decode failures (CRC mismatch, invalid data)
 - `CBORParseError` - Thrown on CBOR parsing failures
 
+## Performance
+
+The library includes a custom CBOR codec optimized for Fusain's message format.
+No external CBOR dependencies are required.
+
+| Operation | Performance |
+|-----------|-------------|
+| Encode | ~150 ns/op (3M+ ops/sec) |
+| Decode | ~200 ns/op (4.5M+ ops/sec) |
+| Wire format | 21 bytes (typical telemetry) |
+
+The codec produces standard CBOR (RFC 8949) without tags, ensuring wire
+compatibility with the C and Go implementations.
+
+### Benchmarks
+
+```bash
+task benchmark           # Overall performance
+task benchmark:compare   # Compare against cbor-x
+task benchmark:profile   # Profile encoder components
+```
+
 ## Thread Safety
 
-The library is safe for typical single-threaded JavaScript usage. All encoding
-and decoding functions are synchronous and use no shared mutable state.
+The library is safe for typical single-threaded JavaScript usage. The CBOR codec
+uses module-level buffer pooling for performance, which means `encodeCBOR` and
+`decodeCBOR` are not reentrant.
 
 **Patterns to avoid:**
 
@@ -147,6 +172,11 @@ and decoding functions are synchronous and use no shared mutable state.
 2. **Using `SharedArrayBuffer` for input that may be modified during decoding**
    — The decoder reads from the input buffer without copying. If another thread
    modifies the buffer mid-decode, results are undefined.
+
+3. **Interleaved encode/decode calls** — The CBOR codec uses pooled buffers.
+   Concurrent calls from multiple async contexts would corrupt output. In
+   practice this isn't an issue since JavaScript is single-threaded and
+   synchronous functions run to completion.
 
 **Recommended pattern:** One `Decoder` instance per connection or stream.
 

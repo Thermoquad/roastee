@@ -40,6 +40,20 @@ tasks:
     deps: [build]
     cmd: pnpm benchmark
 
+  benchmark:compare:
+    desc: Compare performance against cbor-x
+    deps: [build]
+    cmd: node scripts/compare-cbor-x.mjs
+
+  benchmark:profile:
+    desc: Profile encoder to identify bottlenecks
+    deps: [build]
+    cmd: node scripts/profile-encoder.mjs
+
+  benchmark:pooling:
+    desc: Test buffer pooling impact
+    cmd: node scripts/test-pooling.mjs
+
   ci:
     desc: Run CI checks (format, test with coverage)
     cmds:
