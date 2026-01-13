@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // SPDX-License-Identifier: Apache-2.0
-// Performance benchmark for CBOR codec (cbor-x version)
+// Performance benchmark for Fusain CBOR codec
 //
 // Usage: node scripts/benchmark.mjs [--check]
 //
 // With --check flag, exits with code 1 if performance is below thresholds.
 
-import { encode, decode } from "cbor-x";
+import { encodeCBOR, decodeCBOR } from "../dist/cbor-codec.js";
 
 const ITERATIONS = 50_000;
 const WARMUP = 5_000;
@@ -19,7 +19,6 @@ const THRESHOLDS = {
 };
 
 // Typical Fusain telemetry message
-// Using Map for payload to match Fusain protocol format
 const TELEMETRY_MESSAGE = [
   0x20, // MSG_TELEMETRY_DATA
   new Map([
@@ -57,17 +56,17 @@ function formatOps(ops) {
 // Parse args
 const checkMode = process.argv.includes("--check");
 
-console.log("Fusain CBOR Benchmark (cbor-x)");
+console.log("Fusain CBOR Benchmark");
 console.log("=".repeat(50));
 console.log(`Iterations: ${ITERATIONS.toLocaleString()}`);
 console.log();
 
 // Pre-encode for decode benchmark
-const encoded = encode(TELEMETRY_MESSAGE);
+const encoded = encodeCBOR(TELEMETRY_MESSAGE);
 
 // Run benchmarks
-const encodeResult = benchmark("encode", () => encode(TELEMETRY_MESSAGE));
-const decodeResult = benchmark("decode", () => decode(encoded));
+const encodeResult = benchmark("encode", () => encodeCBOR(TELEMETRY_MESSAGE));
+const decodeResult = benchmark("decode", () => decodeCBOR(encoded));
 
 // Print results
 console.log("Results:");

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 Kaz Walker, Thermoquad
 
-import { decode } from "cbor-x";
+import { decodeCBOR } from "./cbor-codec.js";
 import { CBORParseError } from "./types.js";
 import type { PayloadMap } from "./types.js";
 
@@ -19,15 +19,8 @@ export function parseCBORMessage(
     throw new CBORParseError("empty CBOR payload");
   }
 
-  let msg: unknown;
-  try {
-    msg = decode(data);
-  } catch (err) {
-    // cbor-x always throws Error instances
-    throw new CBORParseError(
-      `failed to decode CBOR: ${(err as Error).message}`,
-    );
-  }
+  // decodeCBOR always throws CBORParseError on failure
+  const msg = decodeCBOR(data);
 
   if (!Array.isArray(msg) || msg.length !== 2) {
     throw new CBORParseError(
@@ -53,34 +46,15 @@ export function parseCBORMessage(
     return [msgType, null];
   }
 
-  if (!(rawPayload instanceof Map) && typeof rawPayload !== "object") {
+  if (!(rawPayload instanceof Map)) {
     throw new CBORParseError(
       `expected map or null for payload, got ${typeof rawPayload}`,
     );
   }
 
-  // Convert to Map<number, unknown>
-  const payloadMap: PayloadMap = new Map();
-
-  if (rawPayload instanceof Map) {
-    for (const [key, val] of rawPayload) {
-      if (typeof key !== "number" || !Number.isInteger(key)) {
-        throw new CBORParseError(`expected integer map key, got ${typeof key}`);
-      }
-      payloadMap.set(key, val);
-    }
-  } else {
-    // Plain object from some CBOR decoders
-    for (const [key, val] of Object.entries(rawPayload)) {
-      const numKey = parseInt(key, 10);
-      if (isNaN(numKey)) {
-        throw new CBORParseError(`expected integer map key, got ${key}`);
-      }
-      payloadMap.set(numKey, val);
-    }
-  }
-
-  return [msgType, payloadMap];
+  // Our codec only returns Map<number, unknown> - text strings throw during decoding
+  // and bigint keys are converted to Number. The cast is safe.
+  return [msgType, rawPayload as PayloadMap];
 }
 
 /**

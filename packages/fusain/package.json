@@ -56,9 +56,6 @@
     "typescript": "^5.8.0",
     "vitest": "^3.2.4"
   },
-  "dependencies": {
-    "cbor-x": "^1.6.0"
-  },
   "engines": {
     "node": ">=22.0.0"
   }

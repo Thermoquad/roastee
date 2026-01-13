@@ -134,6 +134,22 @@ Decoded packet with lazy CBOR parsing.
 - `DecodeError` - Thrown on decode failures (CRC mismatch, invalid data)
 - `CBORParseError` - Thrown on CBOR parsing failures
 
+## Thread Safety
+
+The library is safe for typical single-threaded JavaScript usage. All encoding
+and decoding functions are synchronous and use no shared mutable state.
+
+**Patterns to avoid:**
+
+1. **Sharing a `Decoder` instance between Web Workers** — Each `Decoder`
+   maintains internal parsing state. Create a separate instance per worker.
+
+2. **Using `SharedArrayBuffer` for input that may be modified during decoding**
+   — The decoder reads from the input buffer without copying. If another thread
+   modifies the buffer mid-decode, results are undefined.
+
+**Recommended pattern:** One `Decoder` instance per connection or stream.
+
 ## Protocol Reference
 
 See the Fusain Protocol Specification:

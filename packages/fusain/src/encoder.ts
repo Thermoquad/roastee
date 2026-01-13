@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 Kaz Walker, Thermoquad
 
-import { encode } from "cbor-x";
+import { encodeCBOR } from "./cbor-codec.js";
 import {
   ADDRESS_SIZE,
   END_BYTE,
@@ -28,8 +28,8 @@ export function encodePacket(
 ): Uint8Array {
   // Build CBOR payload: [msg_type, payload_map]
   const cborData = payload
-    ? encode([msgType, Object.fromEntries(payload)])
-    : encode([msgType, null]);
+    ? encodeCBOR([msgType, Object.fromEntries(payload)])
+    : encodeCBOR([msgType, null]);
 
   if (cborData.length > MAX_PAYLOAD_SIZE) {
     throw new Error(

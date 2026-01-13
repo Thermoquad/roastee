@@ -114,9 +114,10 @@ describe("encodePacket", () => {
   it("should throw on payload too large", () => {
     const address = 0x0102030405060708n;
     // Create a payload that will exceed MAX_PAYLOAD_SIZE when CBOR encoded
+    // Use large byte arrays to exceed the limit
     const largePayload = new Map<number, unknown>();
-    for (let i = 0; i < MAX_PAYLOAD_SIZE; i++) {
-      largePayload.set(i, "x".repeat(10));
+    for (let i = 0; i < 20; i++) {
+      largePayload.set(i, new Uint8Array(10).fill(i));
     }
 
     expect(() => {

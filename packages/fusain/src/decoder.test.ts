@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Kaz Walker, Thermoquad
 
 import { describe, it, expect } from "vitest";
-import { encode } from "cbor-x";
+import { encodeCBOR } from "./cbor-codec.js";
 import { Decoder } from "./decoder.js";
 import { calculateCRC } from "./crc.js";
 import {
@@ -23,7 +23,7 @@ function buildCBORPayload(
   payload: Record<number, unknown> | null,
 ): Uint8Array {
   const msg = payload ? [msgType, payload] : [msgType, null];
-  return encode(msg);
+  return encodeCBOR(msg);
 }
 
 // Helper to build a complete packet

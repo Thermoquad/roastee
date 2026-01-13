@@ -37,6 +37,7 @@ tasks:
 
   benchmark:
     desc: Run performance benchmark
+    deps: [build]
     cmd: pnpm benchmark
 
   ci:

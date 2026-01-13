@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Kaz Walker, Thermoquad
 
 import { describe, it, expect } from "vitest";
-import { encode } from "cbor-x";
+import { encodeCBOR } from "./cbor-codec.js";
 import { Packet } from "./packet.js";
 import {
   ADDRESS_BROADCAST,
@@ -20,7 +20,7 @@ function buildCBORPayload(
   payload: Record<number, unknown> | null,
 ): Uint8Array {
   const msg = payload ? [msgType, payload] : [msgType, null];
-  return encode(msg);
+  return encodeCBOR(msg);
 }
 
 describe("Packet", () => {
