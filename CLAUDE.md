@@ -37,6 +37,7 @@ roastee/
         │   ├── types.ts      # TypeScript types
         │   ├── crc.ts        # CRC-16-CCITT
         │   ├── cbor.ts       # CBOR parsing helpers
+        │   ├── cbor-codec.ts # Minimal CBOR codec
         │   ├── packet.ts     # Packet class
         │   ├── decoder.ts    # State machine decoder
         │   ├── encoder.ts    # Packet encoder
@@ -76,6 +77,7 @@ protocol, matching the C and Go implementations.
 | `types.ts` | TypeScript interfaces and error classes |
 | `crc.ts` | CRC-16-CCITT implementation |
 | `cbor.ts` | CBOR parsing and payload map helpers |
+| `cbor-codec.ts` | Minimal CBOR codec for Fusain protocol subset |
 | `packet.ts` | Packet class with lazy CBOR parsing |
 | `decoder.ts` | State machine for byte stream decoding |
 | `encoder.ts` | Packet encoding with byte stuffing |
@@ -171,9 +173,30 @@ Follow the organization git workflow in `../../CLAUDE.md`.
 
 ## AI Assistant Operations
 
-To reload all organization CLAUDE.md files or run a content integrity check, see
-the **CLAUDE.md Reload** and **Content Integrity Check** sections in the
-[Thermoquad Organization CLAUDE.md](../../CLAUDE.md).
+### Content Integrity Check
+
+To verify consistency across all CLAUDE.md files in the organization, see the **Content Integrity Check** section in the [Thermoquad Organization CLAUDE.md](../../CLAUDE.md).
+
+**How to Request:** Ask the AI assistant to "run a content integrity check on all CLAUDE.md files"
+
+### Content Status Integrity Check
+
+To validate that this CLAUDE.md accurately reflects the actual Roastee implementation, see the **Content Status Integrity Check** section in the [Thermoquad Organization CLAUDE.md](../../CLAUDE.md).
+
+**How to Request:** Ask the AI assistant to "run a content status integrity check on roastee"
+
+**What Gets Checked for Roastee:**
+- package.json dependencies match documented versions
+- TypeScript implementation completeness (all documented files exist in packages/fusain/src/)
+- Test coverage actually meets 100% requirement
+- Build succeeds with `task build`
+- Tests pass with `task test`
+- npm publishing status (currently not published, should match docs)
+- pnpm workspace configuration matches documented structure
+
+### CLAUDE.md Reload
+
+To reload all organization CLAUDE.md files, see the **CLAUDE.md Reload** section in the [Thermoquad Organization CLAUDE.md](../../CLAUDE.md).
 
 ---
 
@@ -205,6 +228,6 @@ All source files in `packages/fusain/src/` must include the SPDX header:
 
 ---
 
-**Last Updated:** 2026-01-11
+**Last Updated:** 2026-01-15
 
 **Maintainer:** Kaz Walker
